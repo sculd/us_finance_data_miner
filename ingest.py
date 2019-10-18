@@ -6,7 +6,7 @@ _API_KEY_QUANDL = os.environ['API_KEY_QUANDL']
 
 def get_symbols():
     symbols = []
-    for symbol in open('symbols.txt', 'r'):
+    for symbol in open('nasdaq.txt', 'r'):
         symbol = symbol.strip()
         symbols.append(symbol)
     return symbols
