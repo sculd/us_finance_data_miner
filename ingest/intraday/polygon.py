@@ -44,7 +44,7 @@ def download_histories_csv(date):
 
     with open(filename, 'w') as outfile:
         outfile.write('date,time,close,open,high,low,volume,symbol\n')
-        for res in responses:
+        for cnt, res in enumerate(responses):
 
             if not res:
                 print('The response is invalid: %s' % (res))
@@ -63,6 +63,7 @@ def download_histories_csv(date):
                 continue
 
             symbol = js['ticker']
+            print('{cnt}th {symbol}, blobs: {l}'.format(cnt=cnt, symbol=symbol, l=len(data)))
             out_lines = []
             for blob in data:
                 epoch = int(blob['t']) // 1000
