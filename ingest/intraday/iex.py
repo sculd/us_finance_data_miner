@@ -1,66 +1,107 @@
-import requests, os, pickle, time, datetime
+import requests, os, re, pickle, time, datetime
 import util.symbols
 
-_URL_BASE = 'https://cloud.iexapis.com/stable'
-_QUERY_PATH_INTRADAY_PRICE  = '/stock/{symbol}/intraday-prices?token={token}&exactDate={date}'
-_API_KEY = os.environ['API_KEY_IEX']
+_URL_BASE = 'https://sandbox.iexapis.com/stable'
+_QUERY_PATH  = '/stock/{symbol}/chart/date/{date}?token={token}'
+_API_KEY = os.environ['API_KEY_IEX_SANDBOX']
 
+from requests_throttler import BaseThrottler
+
+def _get_request(date, symbol):
+    param_option = {
+        'symbol': symbol,
+        'date': date, # YYYYMMDD
+        'token': _API_KEY,
+    }
+    url = _URL_BASE + _QUERY_PATH.format(**param_option)
+    return requests.Request(method='GET', url=url)
+
+def _get_requests(date):
+    res = []
+    symbols = util.symbols.get_symbols()
+    for symbol in symbols:
+        res.append(_get_request(date, symbol))
+    return res
+
+def _run_requests_return_rows(request_list):
+    bt = BaseThrottler(name='base-throttler', delay=0.04)
+    bt.start()
+    throttled_requests = bt.multi_submit(request_list)
+
+    print('shutting down the throttler')
+    bt.shutdown()
+    print('waiting for the requests to be done')
+    bt.wait_end()
+    print('run_done')
+    responses = [tr.response for tr in throttled_requests]
+
+    rows = []
+    for cnt, res in enumerate(responses):
+        if not res:
+            print('The response is invalid: %s' % (res))
+            continue
+
+        if res.status_code != 200:
+            print('response status code is not 200 OK: {code}'.format(code=res.status_code))
+            continue
+
+        js = res.json()
+        req = request_list[cnt]
+        m = re.search(r'stock/([^/]+)', req.url)
+        if not m:
+            continue
+
+        if not m.groups():
+            continue
+
+        symbol = m.groups()[0]
+
+        if not js:
+            continue
+
+        print('{cnt}th {symbol}, blobs: {l}'.format(cnt=cnt, symbol=symbol, l=len(js)))
+        prev_close = None
+        for blob in js:
+            keys = ['date', 'minute', 'close', 'open', 'high', 'low', 'volume']
+            is_blob_compromised = False
+            for k in keys:
+                if k not in blob:
+                    print('blob: {blob} does not have all the expected keys, missing key: {key}'.format(blob=str(blob), key=k))
+                    is_blob_compromised = True
+                    break
+            if is_blob_compromised:
+                continue
+            date_str = blob['date']
+            time_str = blob['minute']
+            close, open_, high, low, volume = blob['close'], blob['open'], blob['high'], blob['low'], blob['volume']
+            if volume == '0' or volume == 0 or close is None:
+                close, open_, high, low = prev_close, prev_close, prev_close, prev_close
+
+            if close is None:
+                continue
+
+            rows.append('{date_str},{time_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(
+                date_str=date_str, time_str=time_str, close=close, open=open_, high=high, low=low, volume=volume,
+                symbol=symbol))
+
+            prev_close = close
+    return rows
 
 def download_histories_csv(date):
-    filename = 'data/us.intraday.history_{date}.csv'.format(date=date)
+    filename = 'data/intraday/us.intraday.iex.history_{date}.csv'.format(date=date)
+
+    request_list = _get_requests(date)
+
+    batch_size = 100
+    i_batch_start = 0
+    rows = []
+    while i_batch_start < len(request_list):
+        print('i_batch_start: {i_batch_start} begin'.format(i_batch_start=i_batch_start))
+        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size])
+        print('i_batch_start: {i_batch_start} is done'.format(i_batch_start=i_batch_start))
+        i_batch_start += batch_size
 
     with open(filename, 'w') as outfile:
-        outfile.write('date,close,open,high,low,volume,symbol\n')
-
-        symbols = util.symbols.get_symbols()
-        for cnt, symbol in enumerate(symbols):
-            print('processing {cnt}th symbol: {symbol}'.format(symbol=symbol, cnt=cnt))
-
-            param_option = {
-                'symbol': symbol,
-                'date': date, #YYYYMMDD
-                'token': _API_KEY,
-            }
-
-            url = _URL_BASE + _QUERY_PATH_INTRADAY_PRICE.format(**param_option)
-            response = requests.get(
-                url,
-                data={}
-                )
-
-            res = response.json()
-            if not res:
-                print('The response is invalid: %s' % (res))
-                continue
-
-            if 'dataset' not in res:
-                print('The response does not have dataset: %s' % (res))
-                continue
-
-            if 'data' not in res['dataset']:
-                print('The response data does not have data: %s' % (res))
-                continue
-
-            data = res['dataset']['data']
-            out_lines = []
-            for data_for_date in data:
-                date_str, close, open_, high, low, volume = data_for_date[0], data_for_date[4], data_for_date[1], data_for_date[2], data_for_date[3], data_for_date[5]
-                out_lines.append('{date},{close},{open},{high},{low},{volume},{symbol}\n'.format(date=date, close=close, open=open_, high=high, low=low, volume=volume, symbol=symbol))
-            outfile.writelines(out_lines)
-
-
-'''
-{ 
-      "date":"2019-10-18",
-      "minute":"13:55",
-      "label":"1:55 PM",
-      "high":236.13,
-      "low":236.095,
-      "open":236.13,
-      "close":236.095,
-      "average":236.112,
-      "volume":450,
-      "notional":106250.5,
-      "numberOfTrades":5
-   }
-'''
+        outfile.write('date,time,close,open,high,low,volume,symbol\n')
+        for row in rows:
+            outfile.writelines(row)
