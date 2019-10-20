@@ -1,36 +1,30 @@
 import requests, os, pickle, time, datetime
+import util.symbols
 
-_USL_BASE_QUANDL = 'https://www.quandl.com/api'
-_QUERY_PATH_QUANDL_DAILY_QUOTE  = '/v3/datasets/EOD/{symbol}?start_date={start_date}&end_date={end_date}&api_key={api_key}'
-_API_KEY_QUANDL = os.environ['API_KEY_QUANDL']
+_URL_BASE = 'https://cloud.iexapis.com/stable'
+_QUERY_PATH_INTRADAY_PRICE  = '/stock/{symbol}/intraday-prices?token={token}&exactDate={date}'
+_API_KEY = os.environ['API_KEY_IEX']
 
-def get_symbols():
-    symbols = []
-    for symbol in open('nasdaq.txt', 'r'):
-        symbol = symbol.strip()
-        symbols.append(symbol)
-    return symbols
 
-def download_histories_csv(start_date, end_date):
-    date_str = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
-    filename = 'data/us.history_{date_str}.csv'.format(date_str=date_str)
+def download_histories_csv(date):
+    filename = 'data/us.intraday.history_{date}.csv'.format(date=date)
 
     with open(filename, 'w') as outfile:
         outfile.write('date,close,open,high,low,volume,symbol\n')
 
-        symbols = get_symbols()
+        symbols = util.symbols.get_symbols()
         for cnt, symbol in enumerate(symbols):
             print('processing {cnt}th symbol: {symbol}'.format(symbol=symbol, cnt=cnt))
 
             param_option = {
                 'symbol': symbol,
-                'start_date': start_date,
-                'end_date': end_date,
-                'api_key': _API_KEY_QUANDL,
+                'date': date, #YYYYMMDD
+                'token': _API_KEY,
             }
 
+            url = _URL_BASE + _QUERY_PATH_INTRADAY_PRICE.format(**param_option)
             response = requests.get(
-                _USL_BASE_QUANDL + _QUERY_PATH_QUANDL_DAILY_QUOTE.format(**param_option),
+                url,
                 data={}
                 )
 
@@ -51,7 +45,22 @@ def download_histories_csv(start_date, end_date):
             out_lines = []
             for data_for_date in data:
                 date_str, close, open_, high, low, volume = data_for_date[0], data_for_date[4], data_for_date[1], data_for_date[2], data_for_date[3], data_for_date[5]
-                out_lines.append('{date_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(date_str=date_str, close=close, open=open_, high=high, low=low, volume=volume, symbol=symbol))
+                out_lines.append('{date},{close},{open},{high},{low},{volume},{symbol}\n'.format(date=date, close=close, open=open_, high=high, low=low, volume=volume, symbol=symbol))
             outfile.writelines(out_lines)
 
 
+'''
+{ 
+      "date":"2019-10-18",
+      "minute":"13:55",
+      "label":"1:55 PM",
+      "high":236.13,
+      "low":236.095,
+      "open":236.13,
+      "close":236.095,
+      "average":236.112,
+      "volume":450,
+      "notional":106250.5,
+      "numberOfTrades":5
+   }
+'''
