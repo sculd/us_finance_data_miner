@@ -1,3 +1,5 @@
 data/*.csv
 !data/us.intraday.history_2019-10-16.csv
 credential.json
+__pycache__/
+**/__pycache__/
