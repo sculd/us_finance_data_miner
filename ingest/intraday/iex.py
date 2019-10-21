@@ -5,6 +5,12 @@ _URL_BASE = 'https://sandbox.iexapis.com/stable'
 _QUERY_PATH  = '/stock/{symbol}/chart/date/{date}?token={token}'
 _API_KEY = os.environ['API_KEY_IEX_SANDBOX']
 
+from enum import Enum
+
+class INTRADAY_MODE(Enum):
+    ALL_MINUTES = 1
+    LAST_RECORD = 2
+
 from requests_throttler import BaseThrottler
 
 def _get_request(date, symbol):
@@ -23,7 +29,7 @@ def _get_requests(date):
         res.append(_get_request(date, symbol))
     return res
 
-def _run_requests_return_rows(request_list):
+def _run_requests_return_rows(request_list, intraday_mode):
     bt = BaseThrottler(name='base-throttler', delay=0.04)
     bt.start()
     throttled_requests = bt.multi_submit(request_list)
@@ -61,6 +67,10 @@ def _run_requests_return_rows(request_list):
 
         print('{cnt}th {symbol}, blobs: {l}'.format(cnt=cnt, symbol=symbol, l=len(js)))
         prev_close = None
+
+        if intraday_mode is INTRADAY_MODE.LAST_RECORD:
+            js = js[-1:]
+
         for blob in js:
             keys = ['date', 'minute', 'close', 'open', 'high', 'low', 'volume']
             is_blob_compromised = False
@@ -87,8 +97,12 @@ def _run_requests_return_rows(request_list):
             prev_close = close
     return rows
 
-def download_histories_csv(date):
-    filename = 'data/intraday/us.intraday.iex.history_{date}.csv'.format(date=date)
+def download_histories_csv(date, intraday_mode=INTRADAY_MODE.ALL_MINUTES):
+    filename = None
+    if intraday_mode is INTRADAY_MODE.ALL_MINUTES:
+        filename = 'data/intraday/us.intraday.iex.all.csv'.format(date=date)
+    elif intraday_mode is INTRADAY_MODE.LAST_RECORD:
+        filename = 'data/intraday/us.intraday.iex.last.csv'.format(date=date)
 
     request_list = _get_requests(date)
 
@@ -97,7 +111,7 @@ def download_histories_csv(date):
     rows = []
     while i_batch_start < len(request_list):
         print('i_batch_start: {i_batch_start} begin'.format(i_batch_start=i_batch_start))
-        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size])
+        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size], intraday_mode)
         print('i_batch_start: {i_batch_start} is done'.format(i_batch_start=i_batch_start))
         i_batch_start += batch_size
 
