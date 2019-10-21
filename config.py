@@ -15,6 +15,6 @@ def _get_tz_utcoffset_hours(cfg):
     td = tz.utcoffset(datetime.datetime.utcnow())
     return td.seconds // 3600
 
-def get_start(cfg):
-    t = datetime.datetime.strptime(cfg['schedule']['start'], '%H:%M:%S')
+def get_daily_ingestion_start_t(cfg):
+    t = datetime.datetime.strptime(cfg['schedule']['daily_ingestion_start'], '%H:%M:%S')
     return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))

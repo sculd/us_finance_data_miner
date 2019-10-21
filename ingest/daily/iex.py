@@ -91,8 +91,7 @@ def _run_requests_return_rows(request_list):
     return rows
 
 def download_histories_csv():
-    date = util.time.get_today_str_tz()
-    filename = 'data/daily/us.daily.iex.{date}.csv'.format(date=date)
+    filename = 'data/daily/us.daily.iex.{range}.csv'.format(range=_RANGE_5D)
 
     request_list = _get_requests()
 
@@ -106,6 +105,6 @@ def download_histories_csv():
         i_batch_start += batch_size
 
     with open(filename, 'w') as outfile:
-        outfile.write('date,time,close,open,high,low,volume,symbol\n')
+        outfile.write('date,close,open,high,low,volume,symbol\n')
         for row in rows:
             outfile.writelines(row)

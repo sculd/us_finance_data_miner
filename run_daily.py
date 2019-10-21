@@ -6,23 +6,21 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.getcwd(), 'creden
 import time
 import util.time
 import config
-import ingest.daily.iex as ingest_daily
-import ingest.append
-import ingest.combine_ingest
-import upload.upload
+import ingest.daily.iex
+import ingest.combine
+import upload.daily.upload
 import upload.daily.history
 import util.logging as logging
 
 
-def run_ingests_append_combine(pages_to_ingest):
-    ingest.ingest.run(pages_to_ingest=pages_to_ingest)
-    ingest.append.combine_most_recent_and_temp()
-    ingest.combine_ingest.run()
+def run_ingests_append_combine():
+    ingest.daily.iex.download_histories_csv()
+    ingest.combine.combine_and_save_files('data/daily', ['date', 'symbol'])
 
 def run_upload():
-    upload.upload.upload()
+    upload.daily.upload.upload()
 
-def run(pages_to_ingest, forcerun):
+def run(forcerun):
     cfg = config.load('config.us.yaml')
     tz = config.get_tz(cfg)
 
@@ -34,12 +32,12 @@ def run(pages_to_ingest, forcerun):
             time.sleep(10 * 60)
             continue
 
-        t_run_after = config.get_start(cfg)
+        t_run_after = config.get_daily_ingestion_start_t(cfg)
         while True:
             t_cur = util.time.get_utcnow().astimezone(tz).time()
             logging.info('checking if the schedule time for {dt_str} has reached'.format(dt_str=dt_str))
             if forcerun or t_cur > t_run_after:
-                run_ingests_append_combine(pages_to_ingest)
+                run_ingests_append_combine()
                 run_upload()
                 upload.daily.history.on_upload()
                 break
@@ -54,10 +52,9 @@ def run(pages_to_ingest, forcerun):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--pages", type=int, default=1, help="pages to ingest")
     parser.add_argument("-f", "--forcerun", action="store_true", help="forces run without waiting without observing the schedule.")
     args = parser.parse_args()
 
     if args.forcerun:
         print('forcerun on')
-    run(args.pages, args.forcerun)
+    run(args.forcerun)

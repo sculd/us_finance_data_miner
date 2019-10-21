@@ -1,7 +1,12 @@
+import ingest.combine
+
+ingest.combine.combine_and_save_files('data/daily', ['date', 'symbol'])
+
+#'''
 import ingest.daily.iex
 
-ingest.daily.iex.download_histories_csv()
-
+#ingest.daily.iex.download_histories_csv()
+#'''
 
 '''
 import ingest.intraday.iex
