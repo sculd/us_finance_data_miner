@@ -18,3 +18,7 @@ def _get_tz_utcoffset_hours(cfg):
 def get_daily_ingestion_start_t(cfg):
     t = datetime.datetime.strptime(cfg['schedule']['daily_ingestion_start'], '%H:%M:%S')
     return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))
+
+def get_intraday_ingestion_start_t(cfg):
+    t = datetime.datetime.strptime(cfg['schedule']['intraday_ingestion_start'], '%H:%M:%S')
+    return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))

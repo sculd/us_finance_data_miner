@@ -7,6 +7,12 @@ _URL_BASE = 'https://api.polygon.io/v2'
 _QUERY_PATH_INTRADAY_PRICE  = '/aggs/ticker/{symbol}/range/1/minute/{start_date}/{end_date}?apiKey={apiKey}'
 _API_KEY = os.environ['API_KEY_POLYGON']
 
+from enum import Enum
+
+class INTRADAY_MODE(Enum):
+    ALL_MINUTES = 1
+    LAST_RECORD = 2
+
 from requests_throttler import BaseThrottler
 
 def _get_request(date, symbol):
@@ -27,11 +33,11 @@ def _get_requests(date):
     return res
 
 def download_histories_csv(date):
-    filename = 'data/us.intraday.history_{date}.csv'.format(date=date)
+    filename = 'data/intraday/us.intraday.polygon.history.csv'.format(date=date)
 
     request_list = _get_requests(date)
     # request_list = request_list[:10]
-    bt = BaseThrottler(name='base-throttler', delay=0.2)
+    bt = BaseThrottler(name='base-throttler', delay=0.04)
     bt.start()
     throttled_requests = bt.multi_submit(request_list)
 

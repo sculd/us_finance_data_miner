@@ -14,9 +14,8 @@ import util.logging as logging
 from ingest.intraday.iex import INTRADAY_MODE
 
 
-def run_ingests_append_combine(date_v):
+def run_ingests(date_v):
     ingest.intraday.iex.download_histories_csv(date_v, intraday_mode=INTRADAY_MODE.LAST_RECORD)
-    ingest.combine.combine_and_save_files('data/daily', ['date', 'symbol'])
 
 def run_upload():
     upload.intraday.upload.upload(INTRADAY_MODE.LAST_RECORD)
@@ -33,12 +32,12 @@ def run(forcerun):
             time.sleep(10 * 60)
             continue
 
-        t_run_after = config.get_daily_ingestion_start_t(cfg)
+        t_run_after = config.get_intraday_ingestion_start_t(cfg)
         while True:
             t_cur = util.time.get_utcnow().astimezone(tz).time()
             logging.info('checking if the schedule time for {dt_str} has reached'.format(dt_str=dt_str))
             if forcerun or t_cur > t_run_after:
-                run_ingests_append_combine(util.time.get_today_v_tz())
+                run_ingests(util.time.get_today_v_tz())
                 run_upload()
                 upload.intraday.history.on_upload()
                 break

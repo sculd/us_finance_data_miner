@@ -69,7 +69,7 @@ def _run_requests_return_rows(request_list, intraday_mode):
         prev_close = None
 
         if intraday_mode is INTRADAY_MODE.LAST_RECORD:
-            js = js[-1:]
+            js = js[-5:][::-1]
 
         for blob in js:
             keys = ['date', 'minute', 'close', 'open', 'high', 'low', 'volume']
@@ -95,9 +95,13 @@ def _run_requests_return_rows(request_list, intraday_mode):
                 symbol=symbol))
 
             prev_close = close
+
+            if intraday_mode is INTRADAY_MODE.LAST_RECORD:
+                break
+            
     return rows
 
-def download_histories_csv(date, intraday_mode=INTRADAY_MODE.ALL_MINUTES):
+def download_histories_csv(date, intraday_mode=INTRADAY_MODE.LAST_RECORD):
     filename = None
     if intraday_mode is INTRADAY_MODE.ALL_MINUTES:
         filename = 'data/intraday/us.intraday.iex.all.csv'.format(date=date)
