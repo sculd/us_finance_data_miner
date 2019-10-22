@@ -5,8 +5,15 @@ import ingest.intraday.polygon
 
 #ingest.intraday.iex.download_histories_csv('20191016')
 
-ingest.intraday.polygon.download_histories_csv('2019-10-16')
+#ingest.intraday.polygon.download_histories_csv('2019-10-16')
 
+import ingest.daily.last.polygon
+
+#ingest.daily.last.polygon.download_histories_csv()
+
+import ingest.daily.polygon
+
+ingest.daily.polygon.download_histories_csv('2019-10-17')
 
 
 '''
