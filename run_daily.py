@@ -18,8 +18,8 @@ def run_ingests_append_combine():
     ingest.daily.polygon.download_histories_csv(date_str)
     ingest.combine.combine_and_save_files('data/daily', ['date', 'symbol'])
 
-def run_upload():
-    upload.daily.upload.upload()
+def run_upload(cfg):
+    upload.daily.upload.upload(cfg)
 
 def run(forcerun):
     cfg = config.load('config.us.yaml')
@@ -39,7 +39,7 @@ def run(forcerun):
             logging.info(cfg, 'checking if the schedule time for {dt_str} has reached'.format(dt_str=dt_str))
             if forcerun or t_cur > t_run_after:
                 run_ingests_append_combine()
-                run_upload()
+                run_upload(cfg)
                 upload.daily.history.on_upload()
                 break
 

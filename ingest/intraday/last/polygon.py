@@ -31,10 +31,10 @@ def _get_requests(date):
         res.append(_get_request(date, symbol))
     return res
 
-def download_histories_csv(date):
-    filename = 'data/intraday/us.intraday.polygon.last.csv'.format(date=date)
+def download_histories_csv(date_str):
+    filename = 'data/intraday/us.intraday.polygon.last.csv'
 
-    request_list = _get_requests(date)
+    request_list = _get_requests(date_str)
     # request_list = request_list[:10]
     bt = BaseThrottler(name='base-throttler', delay=0.04)
     bt.start()

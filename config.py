@@ -19,9 +19,16 @@ def get_daily_ingestion_start_t(cfg):
     t = datetime.datetime.strptime(cfg['schedule']['daily_ingestion_start'], '%H:%M:%S')
     return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))
 
+def get_daily_last_record_ingestion_start_t(cfg):
+    t = datetime.datetime.strptime(cfg['schedule']['daily_last_record_ingestion_start'], '%H:%M:%S')
+    return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))
+
 def get_intraday_ingestion_start_t(cfg):
     t = datetime.datetime.strptime(cfg['schedule']['intraday_ingestion_start'], '%H:%M:%S')
     return datetime.time(t.hour, t.minute, t.second, tzinfo=get_tz(cfg))
 
 def get_log_name(cfg):
     return cfg['logname']
+
+def get_uploadname(cfg):
+    return cfg['uploadname']

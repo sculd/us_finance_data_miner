@@ -7,6 +7,10 @@ _QUERY_PATH = '/aggs/grouped/locale/US/market/STOCKS/{date}?apiKey={apiKey}'
 _API_KEY = os.environ['API_KEY_POLYGON']
 _DIR_BASE = 'data/daily_polygon/'
 
+from pytz import timezone
+_TZ_US_EAST = timezone('US/EASTERN')
+
+
 from requests_throttler import BaseThrottler
 
 def _get_request(date_str):
@@ -23,7 +27,7 @@ def _get_requests(date_str):
     return res
 
 
-def _run_requests_return_rows(request_list, date_str):
+def _run_requests_return_rows(request_list):
     bt = BaseThrottler(name='base-throttler', delay=0.5)
     bt.start()
     throttled_requests = bt.multi_submit(request_list)
@@ -79,34 +83,16 @@ def _run_requests_return_rows(request_list, date_str):
             if close_v < 1.0 or close_v > 10000:
                 continue
 
+            t = datetime.datetime.fromtimestamp(int(blob['t']) // 1000)
+            date_str = str(t.astimezone(_TZ_US_EAST).date())
+
             rows.append('{date_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(
                 date_str=date_str, close=close, open=open_, high=high, low=low, volume=volume,
                 symbol=symbol))
 
     return rows
 
-def download_histories_csv(date_str):
-    filename = _DIR_BASE + 'us.daily.polygon.csv'
-
-    request_list = _get_requests(date_str)
-
-    batch_size = 100
-    i_batch_start = 0
-    rows = []
-    while i_batch_start < len(request_list):
-        print('i_batch_start: {i_batch_start} begin'.format(i_batch_start=i_batch_start))
-        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size], date_str)
-        print('i_batch_start: {i_batch_start} is done'.format(i_batch_start=i_batch_start))
-        i_batch_start += batch_size
-
-    with open(filename, 'w') as outfile:
-        outfile.write('date,close,open,high,low,volume,symbol\n')
-        for row in rows:
-            outfile.writelines(row)
-
-
 def download_histories_csv_range(past_days):
-    date_str = util.time.get_today_str_tz()
     filename = _DIR_BASE + 'us.daily.{past_days}d.polygon.csv'.format(past_days=past_days)
 
     request_list = []
@@ -123,7 +109,7 @@ def download_histories_csv_range(past_days):
     rows = []
     while i_batch_start < len(request_list):
         print('i_batch_start: {i_batch_start} begin'.format(i_batch_start=i_batch_start))
-        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size], date_str)
+        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start + batch_size])
         print('i_batch_start: {i_batch_start} is done'.format(i_batch_start=i_batch_start))
         i_batch_start += batch_size
 
@@ -131,3 +117,23 @@ def download_histories_csv_range(past_days):
         outfile.write('date,close,open,high,low,volume,symbol\n')
         for row in rows:
             outfile.writelines(row)
+
+def download_histories_csv(date_str):
+    filename = _DIR_BASE + 'us.daily.polygon.csv'
+
+    request_list = _get_requests(date_str)
+
+    batch_size = 100
+    i_batch_start = 0
+    rows = []
+    while i_batch_start < len(request_list):
+        print('i_batch_start: {i_batch_start} begin'.format(i_batch_start=i_batch_start))
+        rows += _run_requests_return_rows(request_list[i_batch_start:i_batch_start+batch_size])
+        print('i_batch_start: {i_batch_start} is done'.format(i_batch_start=i_batch_start))
+        i_batch_start += batch_size
+
+    with open(filename, 'w') as outfile:
+        outfile.write('date,close,open,high,low,volume,symbol\n')
+        for row in rows:
+            outfile.writelines(row)
+

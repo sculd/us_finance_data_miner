@@ -8,6 +8,7 @@ _client = None
 
 _BUCKET_NAME = 'stock_daily_data'
 _BLOB_NAME = 'us.daily.csv'
+_BLOB_NAME_LAST_RECORD = 'us.daily.last.record.csv'
 
 def _get_client():
     global _client
@@ -22,15 +23,30 @@ def get_latest_source_filename():
     base_dir = 'data/daily'
     return os.path.join(base_dir, 'us.combined.csv')
 
-def upload():
+def upload(cfg):
     try:
         client = _get_client()
         bucket = client.get_bucket(_BUCKET_NAME)
-        blob = bucket.blob(_BLOB_NAME)
+        blob_name = cfg.get_blobname()
+        blob = bucket.blob(blob_name)
         source_file = get_latest_source_filename()
         blob.upload_from_filename(source_file)
-        print('File {} uploaded to {}.'.format(source_file, _BLOB_NAME))
+        print('File {} uploaded to {}.'.format(source_file, blob_name))
     except NotFound:
         print("Sorry, that bucket {} does not exist!".format(_BUCKET_NAME))
+
+
+def upload_last_record():
+    try:
+        client = _get_client()
+        bucket = client.get_bucket(_BUCKET_NAME)
+        blob_name = _BLOB_NAME_LAST_RECORD
+        blob = bucket.blob(blob_name)
+        source_file = get_latest_source_filename()
+        blob.upload_from_filename(source_file)
+        print('File {} uploaded to {}.'.format(source_file, blob_name))
+    except NotFound:
+        print("Sorry, that bucket {} does not exist!".format(_BUCKET_NAME))
+
 
 

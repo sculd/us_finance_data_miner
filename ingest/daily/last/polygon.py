@@ -6,6 +6,7 @@ _TZ_US_EAST = timezone('US/EASTERN')
 _URL_BASE = 'https://api.polygon.io/v1'
 _QUERY_PATH_INTRADAY_PRICE  = '/last/stocks/{symbol}?apiKey={apiKey}'
 _API_KEY = os.environ['API_KEY_POLYGON']
+_DIR_BASE = 'data/daily_last_record/'
 
 from enum import Enum
 
@@ -81,7 +82,7 @@ def _run_requests_return_rows(request_list):
 
 
 def download_histories_csv():
-    filename = 'data/daily/us.intraday.polygon.last.history.csv'
+    filename = _DIR_BASE + 'us.daily.polygon.last.record.csv'
 
     request_list = _get_requests()
 
