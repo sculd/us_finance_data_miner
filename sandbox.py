@@ -13,7 +13,10 @@ import ingest.daily.last.polygon
 
 import ingest.daily.polygon
 
-ingest.daily.polygon.download_histories_csv('2019-10-17')
+#ingest.daily.polygon.download_histories_csv('2019-10-21')
+
+ingest.daily.polygon.download_histories_csv_range(2)
+
 
 
 '''

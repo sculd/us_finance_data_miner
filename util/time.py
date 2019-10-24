@@ -11,13 +11,19 @@ def get_now_tz():
     tz = config.get_tz(cfg)
     return get_utcnow().astimezone(tz)
 
-def get_today_str_tz():
+def get_today_tz():
     '''
     :return: e.g: 2019-12-25
     '''
     cfg = config.load('config.us.yaml')
     tz = config.get_tz(cfg)
-    return str(get_utcnow().astimezone(tz).date())
+    return get_utcnow().astimezone(tz).date()
+
+def get_today_str_tz():
+    '''
+    :return: e.g: 2019-12-25
+    '''
+    return str(get_today_tz())
 
 def get_today_v_tz():
     '''
