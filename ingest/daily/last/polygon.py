@@ -84,7 +84,7 @@ def _run_requests_return_rows(request_list):
 def download_histories_csv():
     if not os.path.exists(_DIR_BASE):
         os.mkdir(_DIR_BASE)
-        
+
     filename = _DIR_BASE + 'us.daily.polygon.last.record.csv'
 
     request_list = _get_requests()

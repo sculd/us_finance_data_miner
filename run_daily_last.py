@@ -10,7 +10,6 @@ import ingest.daily.last.polygon
 import ingest.combine
 import upload.daily.upload
 import upload.daily.history
-import download.download
 import util.logging as logging
 
 def run_ingests():

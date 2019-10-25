@@ -37,13 +37,20 @@ def upload(cfg):
         print("Sorry, that bucket {} does not exist!".format(_BUCKET_NAME))
 
 
+def get_latest_source_filename_last_record():
+    '''
+    data/daily/us.combined.csv
+    '''
+    base_dir = 'data/daily_last_record'
+    return os.path.join(base_dir, 'us.daily.polygon.last.record.csv')
+
 def upload_last_record():
     try:
         client = _get_client()
         bucket = client.get_bucket(_BUCKET_NAME)
         blob_name = _BLOB_NAME_LAST_RECORD
         blob = bucket.blob(blob_name)
-        source_file = get_latest_source_filename()
+        source_file = get_latest_source_filename_last_record()
         blob.upload_from_filename(source_file)
         print('File {} uploaded to {}.'.format(source_file, blob_name))
     except NotFound:
