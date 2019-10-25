@@ -6,7 +6,7 @@ from google.cloud.exceptions import NotFound
 _client = None
 
 _BUCKET_NAME = 'stock_daily_data'
-_BLOB_NAME_US = 'us.daily.csv'
+_BLOB_NAME_US = 'us.daily.polygon.csv'
 _DEST_DIR = 'data/daily_last_record/'
 DEST_FILENAME_US = _DEST_DIR + 'combined.us.csv'
 
