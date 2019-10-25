@@ -6,7 +6,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.getcwd(), 'creden
 import time
 import util.time
 import config
-import ingest.daily.last.polygon
+import ingest.daily.polygon
 import ingest.combine
 import upload.daily.upload
 import upload.daily.history
@@ -14,7 +14,7 @@ import util.logging as logging
 
 
 def run_ingests_append_combine():
-    ingest.daily.last.polygon.download_histories_csv()
+    ingest.daily.polygon.download_histories_csv_range(2)
     ingest.combine.combine_and_save_files('data/daily_polygon', ['date', 'symbol'])
 
 def run_upload(cfg):
