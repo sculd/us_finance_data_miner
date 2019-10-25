@@ -13,12 +13,8 @@ import upload.daily.history
 import download.download
 import util.logging as logging
 
-def run_download_history():
-    download.download.download()
-
-def run_ingests_append_combine():
+def run_ingests():
     ingest.daily.last.polygon.download_histories_csv()
-    ingest.combine.combine_and_save_files('data/daily_last_record', ['date', 'symbol'])
 
 def run_upload():
     upload.daily.upload.upload_last_record()
@@ -40,8 +36,7 @@ def run(forcerun):
             t_cur = util.time.get_utcnow().astimezone(tz).time()
             logging.info(cfg, 'checking if the schedule time for {dt_str} has reached'.format(dt_str=dt_str))
             if forcerun or t_cur > t_run_after:
-                run_download_history()
-                run_ingests_append_combine()
+                run_ingests()
                 run_upload()
                 upload.daily.history.on_upload()
                 break
