@@ -1,5 +1,6 @@
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.getcwd(), 'credential.json')
+import config
 
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
@@ -27,7 +28,7 @@ def upload(cfg):
     try:
         client = _get_client()
         bucket = client.get_bucket(_BUCKET_NAME)
-        blob_name = cfg.get_blobname()
+        blob_name = config.get_uploadname(cfg)
         blob = bucket.blob(blob_name)
         source_file = get_latest_source_filename()
         blob.upload_from_filename(source_file)
