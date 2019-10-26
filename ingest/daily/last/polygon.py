@@ -69,7 +69,7 @@ def _run_requests_return_rows(request_list):
         print('{cnt}th {symbol}'.format(cnt=cnt, symbol=symbol))
         blob = js['last']
         epoch = int(blob['timestamp']) // 1000
-        t = _TZ_US_EAST.localize(datetime.datetime.utcnow())
+        t = _TZ_US_EAST.localize(datetime.datetime.fromtimestamp(epoch))
         date_str = t.strftime('%Y-%m-%d')
         price = blob['price']
         volume = blob['size']

@@ -83,7 +83,8 @@ def _run_requests_return_rows(request_list):
             if close_v < 1.0 or close_v > 10000:
                 continue
 
-            t = datetime.datetime.fromtimestamp(int(blob['t']) // 1000)
+            epoch = int(blob['t']) // 1000
+            t = _TZ_US_EAST.localize(datetime.datetime.fromtimestamp(epoch))
             date_str = str(t.astimezone(_TZ_US_EAST).date())
 
             rows.append('{date_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(
