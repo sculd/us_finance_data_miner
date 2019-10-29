@@ -32,7 +32,7 @@ def _get_requests():
     return res
 
 def _run_requests_return_rows(request_list):
-    bt = BaseThrottler(name='base-throttler', delay=0.04)
+    bt = BaseThrottler(name='base-throttler', delay=0.02)
     bt.start()
     throttled_requests = bt.multi_submit(request_list)
 
