@@ -1,3 +1,4 @@
+import pprint
 import ingest.intraday.iex
 import ingest.intraday.polygon
 
@@ -15,8 +16,10 @@ import ingest.daily.polygon
 
 #ingest.daily.polygon.download_histories_csv('2019-10-21')
 
-ingest.daily.polygon.download_histories_csv_range(355)
+#ingest.daily.polygon.download_histories_csv_range(355)
 
+import ingest.daily.iex
+pprint.pprint(ingest.daily.iex.test_request())
 
 
 '''

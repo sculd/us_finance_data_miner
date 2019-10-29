@@ -10,6 +10,17 @@ _RANGE_5D = '5d'
 
 from requests_throttler import BaseThrottler
 
+def test_request():
+    symbol = 'TWMC'
+    param_option = {
+        'symbol': symbol,
+        'range': _RANGE_5D,
+        'token': _API_KEY,
+    }
+    url = _URL_BASE + _QUERY_PATH.format(**param_option)
+    res = requests.get(url)
+    return res.json()
+
 def _get_request(symbol):
     param_option = {
         'symbol': symbol,
