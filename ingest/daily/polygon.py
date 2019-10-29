@@ -2,8 +2,9 @@ import requests, os, re, pickle, time, datetime
 import util.symbols
 import util.time
 
-_URL_BASE = 'https://api.polygon.io/v2'
-_QUERY_PATH = '/aggs/grouped/locale/US/market/STOCKS/{date}?apiKey={apiKey}'
+_URL_BASE = 'https://api.polygon.io/v1'
+#_QUERY_PATH = '/aggs/grouped/locale/US/market/STOCKS/{date}?apiKey={apiKey}'
+_QUERY_PATH = '/open-close/{symbol}/{date}?apiKey={apiKey}'
 _API_KEY = os.environ['API_KEY_POLYGON']
 _DIR_BASE = 'data/daily_polygon/'
 
@@ -13,8 +14,9 @@ _TZ_US_EAST = timezone('US/EASTERN')
 
 from requests_throttler import BaseThrottler
 
-def _get_request(date_str):
+def _get_request(symbol, date_str):
     param_option = {
+        'symbol': symbol,
         'date': date_str,
         'apiKey': _API_KEY
     }
@@ -23,12 +25,13 @@ def _get_request(date_str):
 
 def _get_requests(date_str):
     res = []
-    res.append(_get_request(date_str))
+    symbols = util.symbols.get_symbols()
+    for symbol in symbols:
+        res.append(_get_request(symbol, date_str))
     return res
 
-
 def _run_requests_return_rows(request_list):
-    bt = BaseThrottler(name='base-throttler', delay=0.5)
+    bt = BaseThrottler(name='base-throttler', delay=0.04)
     bt.start()
     throttled_requests = bt.multi_submit(request_list)
 
@@ -58,38 +61,30 @@ def _run_requests_return_rows(request_list):
             print('The response does not have proper status: %s' % (js))
             continue
 
-        data = js['results']
-        if not data:
+        keys = ['open', 'afterHours', 'high', 'low', 'volume', 'from']
+        is_blob_compromised = False
+        for k in keys:
+            if k not in js:
+                print('blob: {blob} does not have all the expected keys, missing key: {key}'.format(blob=str(blob),
+                                                                                                    key=k))
+                is_blob_compromised = True
+                break
+        if is_blob_compromised:
             continue
 
-        for i, blob in enumerate(data):
-            keys = ['T', 'v', 'o', 'c', 'h', 'l']
-            is_blob_compromised = False
-            for k in keys:
-                if k not in blob:
-                    print('blob: {blob} does not have all the expected keys, missing key: {key}'.format(blob=str(blob), key=k))
-                    is_blob_compromised = True
-                    break
-            if is_blob_compromised:
-                continue
+        symbol = js['symbol']
 
-            symbol = blob['T']
-            if 'HTLN' in symbol or 'HTLK' in symbol or 'HTLD' in symbol or not symbol:
-                continue
+        close, open_, high, low, volume = js['afterHours'], js['open'], js['high'], js['low'], js['volume']
+        print('{symbol}'.format(symbol=symbol))
+        close_v = float(close)
+        if close_v < 1.0 or close_v > 10000:
+            continue
 
-            close, open_, high, low, volume = blob['c'], blob['o'], blob['h'], blob['l'], blob['v']
-            print('{cnt}th {symbol}'.format(cnt=i, symbol=symbol))
-            close_v = float(close)
-            if close_v < 1.0 or close_v > 10000:
-                continue
+        date_str = datetime.datetime.strptime(js['from'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d")
 
-            epoch = int(blob['t']) // 1000
-            t = _TZ_US_EAST.localize(datetime.datetime.fromtimestamp(epoch))
-            date_str = str(t.astimezone(_TZ_US_EAST).date())
-
-            rows.append('{date_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(
-                date_str=date_str, close=close, open=open_, high=high, low=low, volume=volume,
-                symbol=symbol))
+        rows.append('{date_str},{close},{open},{high},{low},{volume},{symbol}\n'.format(
+            date_str=date_str, close=close, open=open_, high=high, low=low, volume=volume,
+            symbol=symbol))
 
     return rows
 
