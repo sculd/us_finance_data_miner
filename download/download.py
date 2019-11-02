@@ -29,7 +29,7 @@ def _download(dest_dir, blob_name):
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
 
-        dest_filename = dest_dir + 'combined.us.csv'
+        dest_filename = dest_dir + 'us.combined.csv'
         blob.download_to_filename(dest_filename)
         print('Blob {} downloaded to {}.'.format(blob_name, dest_filename))
     except NotFound:
