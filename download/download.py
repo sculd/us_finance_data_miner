@@ -10,7 +10,7 @@ _BUCKET_NAME = 'stock_daily_data'
 _BLOB_NAME_US = 'us.daily.csv'
 _BLOB_NAME_US_POLYGON = 'us.daily.polygon.csv'
 
-DEST_DIR_DAILY = 'data/daily_last_record/'
+DEST_DIR_DAILY = 'data/daily/'
 DEST_DIR_DAILY_LAST_RECORD  = 'data/daily_last_record/'
 
 
