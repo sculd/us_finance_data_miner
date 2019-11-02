@@ -12,7 +12,6 @@ _BLOB_NAME_US_POLYGON = 'us.daily.polygon.csv'
 
 DEST_DIR_DAILY = 'data/daily_last_record/'
 DEST_DIR_DAILY_LAST_RECORD  = 'data/daily_last_record/'
-DEST_FILENAME_US = _DEST_DIR + 'combined.us.csv'
 
 
 def _get_client():
