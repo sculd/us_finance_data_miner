@@ -6,9 +6,14 @@ from google.cloud.exceptions import NotFound
 _client = None
 
 _BUCKET_NAME = 'stock_daily_data'
-_BLOB_NAME_US = 'us.daily.polygon.csv'
-_DEST_DIR = 'data/daily_last_record/'
+
+_BLOB_NAME_US = 'us.daily.csv'
+_BLOB_NAME_US_POLYGON = 'us.daily.polygon.csv'
+
+DEST_DIR_DAILY = 'data/daily_last_record/'
+DEST_DIR_DAILY_LAST_RECORD  = 'data/daily_last_record/'
 DEST_FILENAME_US = _DEST_DIR + 'combined.us.csv'
+
 
 def _get_client():
     global _client
@@ -16,20 +21,24 @@ def _get_client():
         _client = storage.Client()
     return _client
 
-def download():
+def _download(dest_dir, blob_name):
     try:
         client = _get_client()
         bucket = client.get_bucket(_BUCKET_NAME)
-        blob_name = _BLOB_NAME_US
         blob = bucket.blob(blob_name)
 
-        if not os.path.exists(_DEST_DIR):
-            os.mkdir(_DEST_DIR)
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
 
-        deat_filename = DEST_FILENAME_US
-        blob.download_to_filename(deat_filename)
-        print('Blob {} downloaded to {}.'.format(blob_name, deat_filename))
+        dest_filename = dest_dir + 'combined.us.csv'
+        blob.download_to_filename(dest_filename)
+        print('Blob {} downloaded to {}.'.format(blob_name, dest_filename))
     except NotFound:
         print("Sorry, that bucket {} does not exist!".format(_BUCKET_NAME))
 
+def download_polygon(dest_dir):
+    _download(dest_dir, _BLOB_NAME_US_POLYGON)
+
+def download(dest_dir):
+    _download(dest_dir, _BLOB_NAME_US)
 

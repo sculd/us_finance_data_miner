@@ -9,16 +9,24 @@ import config
 import ingest.daily.quandl
 import ingest.combine
 import upload.daily.upload
+import download.download
 import upload.daily.history
 import util.logging as logging
 
+
+def run_download(cfg):
+    logging.info(cfg, 'downloading us daily')
+    download.download.download(download.download.DEST_DIR_DAILY)
+    logging.info(cfg, 'download complete')
 
 def run_ingests_append_combine():
     ingest.daily.quandl.download_histories_csv(2)
     ingest.combine.combine_and_save_files('data/daily', ['date', 'symbol'])
 
 def run_upload(cfg):
+    logging.info(cfg, 'uploading us daily')
     upload.daily.upload.upload(cfg)
+    logging.info(cfg, 'uplaod complete')
 
 def run(forcerun):
     cfg = config.load('config.us.yaml')
@@ -37,6 +45,7 @@ def run(forcerun):
             t_cur = util.time.get_utcnow().astimezone(tz).time()
             logging.info(cfg, 'checking if the schedule time for {dt_str} has reached'.format(dt_str=dt_str))
             if forcerun or t_cur > t_run_after:
+                run_download(cfg)
                 run_ingests_append_combine()
                 run_upload(cfg)
                 upload.daily.history.on_upload()
