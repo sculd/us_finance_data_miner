@@ -12,9 +12,25 @@ import ingest.daily.last.polygon
 
 #ingest.daily.last.polygon.download_histories_csv()
 
+
+import ingest.daily.snapshot.polygon
+
+#ingest.daily.snapshot.polygon.download_histories_csv()
+
+
+import ingest.daily.quandl
+
+#ingest.daily.quandl.download_histories_csv(2)
+
+import ingest.history_dump.quandl
+ingest.history_dump.quandl.extract_histories_csv(700)
+
 import ingest.daily.polygon
 
-ingest.daily.polygon.download_histories_csv('2019-10-21')
+#ingest.daily.polygon.download_histories_csv('2019-10-21')
+
+#ingest.daily.polygon.download_histories_csv_range(355)
+
 
 #ingest.daily.polygon.download_histories_csv_range(355)
 

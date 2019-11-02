@@ -4,3 +4,4 @@ credential.json
 __pycache__/
 **/__pycache__/
 *.pyc
+data/history_dump/*
