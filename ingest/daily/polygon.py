@@ -25,7 +25,7 @@ def _get_request(symbol, date_str):
 
 def _get_requests(date_str):
     res = []
-    symbols = util.symbols.get_symbols()
+    symbols = util.symbols.get_symbols_nasdaq()
     for symbol in symbols:
         res.append(_get_request(symbol, date_str))
     return res

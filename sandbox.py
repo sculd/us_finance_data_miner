@@ -23,7 +23,7 @@ import ingest.daily.quandl
 #ingest.daily.quandl.download_histories_csv(2)
 
 import ingest.history_dump.quandl
-ingest.history_dump.quandl.extract_histories_csv(700)
+ingest.history_dump.quandl.extract_histories_csv(355)
 
 import ingest.daily.polygon
 
