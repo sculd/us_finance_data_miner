@@ -4,3 +4,4 @@ pytz
 PyYAML
 pandas
 google-cloud-storage
+google-cloud-logging
