@@ -3,3 +3,4 @@ RequestsThrottler
 pytz
 PyYAML
 pandas
+google-cloud-storage
