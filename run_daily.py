@@ -3,7 +3,7 @@ import argparse
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.getcwd(), 'credential.json')
 
-import time
+import time, threading
 import util.time
 import config
 import ingest.daily.quandl
@@ -58,8 +58,14 @@ def run(forcerun):
             # forcerun runs only once
             break
 
+def log_heartbeat():
+    while True:
+        logging.info("us_finance_daily_miner: heartbeat message.")
+        time.sleep(30 * 60)
 
 if __name__ == '__main__':
+    threading.Thread(target=log_heartbeat).start()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--forcerun", action="store_true", help="forces run without waiting without observing the schedule.")
     args = parser.parse_args()
