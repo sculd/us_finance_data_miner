@@ -28,8 +28,7 @@ def run_upload(cfg):
     upload.daily.upload.upload(cfg)
     logging.info(cfg, 'uplaod complete')
 
-def run(forcerun):
-    cfg = config.load('config.us.yaml')
+def run(cfg, forcerun):
     tz = config.get_tz(cfg)
 
     while True:
@@ -58,13 +57,14 @@ def run(forcerun):
             # forcerun runs only once
             break
 
-def log_heartbeat():
+def log_heartbeat(cfg):
     while True:
-        logging.info("us_finance_daily_miner: heartbeat message.")
+        logging.info(cfg, "us_finance_daily_miner: heartbeat message.")
         time.sleep(30 * 60)
 
 if __name__ == '__main__':
-    threading.Thread(target=log_heartbeat).start()
+    cfg = config.load('config.us.yaml')
+    threading.Thread(target=log_heartbeat, args=(cfg,)).start()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--forcerun", action="store_true", help="forces run without waiting without observing the schedule.")
@@ -72,4 +72,4 @@ if __name__ == '__main__':
 
     if args.forcerun:
         print('forcerun on')
-    run(args.forcerun)
+    run(cfg, args.forcerun)
